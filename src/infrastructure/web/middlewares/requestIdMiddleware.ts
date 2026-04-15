@@ -14,7 +14,7 @@ export function requestIdMiddleware(
         ? headerId[0].trim()
         : null;
   const id = fromClient || randomUUID();
-  req.requestId = id;
+  (req as any).requestId = id;
   res.setHeader("X-Request-Id", id);
   next();
 }

@@ -8,7 +8,7 @@ export function errorMiddleware(
   res: Response,
   _next: NextFunction
 ): void {
-  const rid = req.requestId ?? "";
+  const rid = (req as any).requestId ?? "";
 
   if (err instanceof HttpError) {
     console.warn(`[${rid}] HttpError ${err.statusCode}: ${err.message}`);

@@ -30,7 +30,7 @@ if (config.app.trustProxy) {
 app.use(helmet());
 app.use(cors({ origin: config.cors.origin }));
 app.use(requestIdMiddleware);
-morgan.token("request-id", (req: Request) => req.requestId ?? "-");
+morgan.token("request-id", (req: Request) => (req as any).requestId ?? "-");
 const prodLogFormat =
   ':request-id :remote-addr - :remote-user [:date[clf]] ":method :url HTTP/:http-version" :status :res[content-length] ":referrer" ":user-agent"';
 app.use(morgan(config.isProduction ? prodLogFormat : "dev"));

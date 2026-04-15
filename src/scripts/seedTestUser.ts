@@ -11,13 +11,15 @@ const TEST_PASSWORD = process.env.SEED_TEST_PASSWORD || "password123";
 const TEST_NAME = process.env.SEED_TEST_NAME || "Usuario de Prueba";
 
 async function seed() {
+  const dbUrl = config.db.database.includes("?")
+    ? `${config.db.database}&authToken=${config.db.authToken}`
+    : `${config.db.database}?authToken=${config.db.authToken}`;
+
   const connection = await createConnection({
-    type: "postgres",
-    host: config.db.host,
-    port: config.db.port,
-    username: config.db.username,
-    password: config.db.password,
-    database: config.db.database,
+    type: "sqlite",
+    database: dbUrl,
+    // @ts-ignore
+    driver: require("@libsql/sqlite3"),
     synchronize: config.db.synchronize,
     entities: config.db.entities,
     migrations: config.db.migrations,

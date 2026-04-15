@@ -9,11 +9,11 @@ import DeleteItem from "../../../application/item/DeleteItem";
 import GetItemById from "../../../application/item/ListById";
 
 export default {
-  async create(req: Request, res: Response) {
+  async create(req: any, res: Response) {
     try {
       const dto = {
         ...req.body,
-        ownerId: req.userId,
+        ownerId: (req as any).userId,
       };
       // Imagen opcional: si no viene archivo, se crea el item sin img_item.
       const item = await new CreateItem().execute(dto);
@@ -23,7 +23,7 @@ export default {
     }
   },
 
-  async list(req: Request, res: Response) {
+  async list(req: any, res: Response) {
     const filters: ListItemsFilters = {
       categoryIds: req.body?.categoryIds,
       minCo2: req.body?.minCo2,
@@ -39,7 +39,7 @@ export default {
     }
   },
 
-  async getbyId(req: Request, res: Response) {
+  async getbyId(req: any, res: Response) {
     try {
       const id = parseInt(req.params.id, 10);
       const item = await new GetItemById().execute(id);
@@ -49,7 +49,7 @@ export default {
     }
   },
 
-  async update(req: Request, res: Response) {
+  async update(req: any, res: Response) {
     try {
       const { id } = req.params;
       const dto = { id, ...req.body };
@@ -60,7 +60,7 @@ export default {
     }
   },
 
-  async delete(req: Request, res: Response) {
+  async delete(req: any, res: Response) {
     try {
       const { id } = req.params;
       await new DeleteItem().execute(id);
