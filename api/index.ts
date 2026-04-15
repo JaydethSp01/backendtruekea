@@ -1,13 +1,15 @@
-import type { VercelRequest, VercelResponse } from "@vercel/node";
 import "reflect-metadata";
 import { createConnection, getConnectionManager } from "typeorm";
-import server from "../src/infrastructure/web/server";
-import config from "../src/infrastructure/config/default";
-import CarbonFootprintHelper from "../src/infrastructure/web/utils/CarbonFootprintHelper";
 
 let initPromise: Promise<void> | null = null;
+let cachedServer: ((req: any, res: any) => any) | null = null;
 
 async function initApp(): Promise<void> {
+  const { default: config } = await import("../src/infrastructure/config/default");
+  const { default: CarbonFootprintHelper } = await import(
+    "../src/infrastructure/web/utils/CarbonFootprintHelper"
+  );
+
   const connectionManager = getConnectionManager();
   if (connectionManager.has("default")) {
     const conn = connectionManager.get("default");
@@ -34,10 +36,24 @@ async function initApp(): Promise<void> {
   await CarbonFootprintHelper.loadDataFromDB();
 }
 
-export default async function handler(req: VercelRequest, res: VercelResponse) {
+export default async function handler(req: any, res: any) {
   if (!initPromise) {
     initPromise = initApp();
   }
-  await initPromise;
-  return server(req, res);
+  try {
+    await initPromise;
+    if (!cachedServer) {
+      const mod = await import("../src/infrastructure/web/server");
+      cachedServer = mod.default;
+    }
+    return cachedServer(req, res);
+  } catch (error: any) {
+    // Permite observar el motivo real en logs de Vercel sin caer en crash opaco.
+    console.error("[vercel] init error:", error);
+    initPromise = null;
+    return res.status(500).json({
+      message: "Initialization failed",
+      detail: error?.message || "unknown error",
+    });
+  }
 }
