@@ -1,0 +1,35 @@
+# Paridad dev/prod: API + PostgreSQL con variables explícitas (sin secretos en el código).
+# Uso: docker compose up --build
+services:
+  db:
+    image: postgres:16-alpine
+    environment:
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: password
+      POSTGRES_DB: truekea
+    ports:
+      - "5432:5432"
+    volumes:
+      - truekea_pg_data:/var/lib/postgresql/data
+
+  api:
+    build: .
+    ports:
+      - "3000:3000"
+    environment:
+      NODE_ENV: production
+      PORT: "3000"
+      DB_HOST: db
+      DB_PORT: "5432"
+      DB_USER: postgres
+      DB_PASS: password
+      DB_NAME: truekea
+      # Primera vez: true una sola vez para crear tablas si aún no hay migraciones; luego false.
+      DB_SYNCHRONIZE: "true"
+      JWT_SECRET: ${JWT_SECRET:-change_me_use_strong_secret_min_32_chars}
+      JWT_REFRESH_SECRET: ${JWT_REFRESH_SECRET:-change_me_refresh_secret_min_32}
+    depends_on:
+      - db
+
+volumes:
+  truekea_pg_data:
