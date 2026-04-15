@@ -10,6 +10,7 @@ import "reflect-metadata";
 import http from "http";
 import { Connection, createConnection } from "typeorm";
 import { createClient } from "@libsql/client";
+import libsql from "@libsql/sqlite3";
 import config from "./infrastructure/config/default";
 import server from "./infrastructure/web/server";
 import CarbonFootprintHelper from "./infrastructure/web/utils/CarbonFootprintHelper";
@@ -38,8 +39,8 @@ async function bootstrap() {
     appConnection = await createConnection({
       type: "sqlite",
       database: dbUrl,
-      // @ts-ignore - TypeORM permite pasar un driver sqlite compatible.
-      driver: require("@libsql/sqlite3"),
+      driver: libsql,
+      flags: libsql.OPEN_READWRITE | libsql.OPEN_CREATE | libsql.OPEN_URI,
       synchronize: config.db.synchronize,
       entities: config.db.entities,
       migrations: config.db.migrations,

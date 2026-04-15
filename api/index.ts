@@ -1,5 +1,6 @@
 import "reflect-metadata";
 import { createConnection, getConnectionManager } from "typeorm";
+import libsql from "@libsql/sqlite3";
 
 let initPromise: Promise<void> | null = null;
 let cachedServer: ((req: any, res: any) => any) | null = null;
@@ -24,8 +25,9 @@ async function initApp(): Promise<void> {
     await createConnection({
       type: "sqlite",
       database: dbUrl,
-      // @ts-ignore - driver sqlite compatible con libsql.
-      driver: require("@libsql/sqlite3"),
+      // TypeORM necesita OPEN_URI para no tratar libsql:// como ruta de archivo local.
+      driver: libsql,
+      flags: libsql.OPEN_READWRITE | libsql.OPEN_CREATE | libsql.OPEN_URI,
       synchronize: config.db.synchronize,
       entities: config.db.entities,
       migrations: config.db.migrations,
